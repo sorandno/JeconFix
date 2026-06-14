@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.stream.Stream;
 
 public class VersionChecker {
@@ -42,7 +43,14 @@ public class VersionChecker {
         Plugin plugin = Jecon.getInstance();
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             nextCheck = CHECK_PERIOD + System.currentTimeMillis();
-            UpdateChecker.LatestVersion latest = checker.callEx();
+            UpdateChecker.LatestVersion latest;
+            try {
+                latest = checker.callEx();
+            } catch (Exception e) {
+                // ネットワークエラー（タイムアウト等）は静かに無視する
+                plugin.getLogger().log(Level.FINE, "Version check failed: " + e.getMessage());
+                return;
+            }
 
             String currentVersion = plugin.getDescription().getVersion();
             if (currentVersion.equals(latest.version)) {
