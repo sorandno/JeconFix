@@ -6,6 +6,8 @@ import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import jp.jyn.jecon.repository.BalanceRepository;
 import jp.jyn.jecon.config.MessageConfig;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
 import java.math.BigDecimal;
@@ -46,7 +48,12 @@ public class Top extends SubCommand {
 
             int i = offset;
             for (Map.Entry<UUID, BigDecimal> entry : top.entrySet()) {
-                variable.put("name", uuidMap.getOrDefault(entry.getKey(), "Unknown"));
+                String name = uuidMap.get(entry.getKey());
+                if (name == null) {
+                    OfflinePlayer offline = Bukkit.getOfflinePlayer(entry.getKey());
+                    name = offline.getName() != null ? offline.getName() : "Unknown";
+                }
+                variable.put("name", name);
                 variable.put("uuid", entry.getKey()); // Secret variable
                 variable.put("balance", repository.format(entry.getValue()));
                 variable.put("rank", ++i);
